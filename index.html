@@ -115,7 +115,7 @@ body::before {
     animation: glitch-anim2 5s infinite linear alternate-reverse;
 }
 
-/* Эквалайзер (Симметричный, как на 2-ом примере из картинки) */
+/* Эквалайзер */
 .equalizer-container {
     display: flex;
     align-items: center;
@@ -127,10 +127,11 @@ body::before {
 
 .bar {
     width: 6px;
-    height: 6px; /* Минимальная высота, когда звука нет */
-    background: linear-gradient(to top, #00e6ff, #0088ff);
+    height: 6px;
+    background: #ffffff; /* Белый цвет */
     border-radius: 3px;
     transition: height 0.05s ease;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); /* Мягкое белое свечение */
 }
 
 /* Анимации */
@@ -186,7 +187,6 @@ body::before {
 
 <div class="main-container">
     <div class="logo">SCHEMING</div>
-    
     <div class="equalizer-container" id="equalizer"></div>
 </div>
 
@@ -204,7 +204,6 @@ const equalizerContainer = document.getElementById('equalizer');
 
 music.volume = 0.20;
 
-// Создаем 32 полоски для эквалайзера
 const BAR_COUNT = 32;
 const bars = [];
 for (let i = 0; i < BAR_COUNT; i++) {
@@ -217,7 +216,6 @@ for (let i = 0; i < BAR_COUNT; i++) {
 let audioCtx, analyser, dataArray;
 let isAudioInitialized = false;
 
-// Инициализация аудио-анализатора (запускается только после действия пользователя)
 function initAudioAnalyser() {
     if (isAudioInitialized) return;
     
@@ -228,7 +226,7 @@ function initAudioAnalyser() {
     source.connect(analyser);
     analyser.connect(audioCtx.destination);
     
-    analyser.fftSize = 64; // Количество частот (из них берем нужные нам 32)
+    analyser.fftSize = 64;
     const bufferLength = analyser.frequencyBinCount;
     dataArray = new Uint8Array(bufferLength);
     
@@ -236,11 +234,9 @@ function initAudioAnalyser() {
     animateEqualizer();
 }
 
-// Функция анимации полосок
 function animateEqualizer() {
     requestAnimationFrame(animateEqualizer);
     if (!isAudioInitialized || music.paused) {
-        // Если музыка стоит на паузе, плавно опускаем полоски
         bars.forEach(bar => bar.style.height = '6px');
         return;
     }
@@ -248,21 +244,16 @@ function animateEqualizer() {
     analyser.getByteFrequencyData(dataArray);
     
     for (let i = 0; i < BAR_COUNT; i++) {
-        // Берем значение частоты (от 0 до 255)
         let value = dataArray[i] || 0;
-        // Переводим в пиксели для высоты (макс 60px)
         let height = (value / 255) * 54 + 6; 
         bars[i].style.height = `${height}px`;
     }
 }
 
-// Иконки для кнопки (Mute / Unmute)
 const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
 const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
 
-// Логика кнопки переключения звука
 muteBtn.addEventListener('click', () => {
-    // Включаем AudioContext, если он еще не запущен
     if (!isAudioInitialized) {
         initAudioAnalyser();
     }
@@ -280,13 +271,11 @@ muteBtn.addEventListener('click', () => {
     }
 });
 
-// Бесшовный перезапуск музыки
 music.onended = function() {
     music.currentTime = 0;
     music.play().catch(error => console.log("Перезапуск заблокирован"));
 };
 
-// Текст загрузки (точки)
 const loading = document.querySelector('.loading');
 let dots = 0;
 setInterval(() => {
