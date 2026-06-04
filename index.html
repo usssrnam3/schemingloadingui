@@ -24,48 +24,114 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    background:#000;
+    background:#050505; /* Чуть мягче чисто черного */
+    position: relative;
+}
+
+/* Минималистичный цифровой фон (эффект шума/сетки) */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at center, transparent 20%, #050505 80%),
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 36, 0.01), rgba(0, 0, 255, 0.03));
+    background-size: 100% 100%, 100% 4px, 6px 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Контейнер для глитч-эффекта */
+.logo-container {
+    position: relative;
+    z-index: 2;
 }
 
 .logo{
     position:relative;
-
     font-size:clamp(80px,10vw,180px);
     font-weight:900;
     font-style:italic;
     letter-spacing:10px;
-
     color:#fff;
-
-    animation:logoGlow 4s ease-in-out infinite;
-
-    text-shadow:
-        0 0 8px rgba(255,255,255,.15),
-        0 0 20px rgba(255,255,255,.08);
+    text-transform: uppercase;
+    
+    /* Основная анимация пульсации света */
+    animation: logoGlow 4s ease-in-out infinite;
 }
 
+/* Создаем слои для глитча через псевдоэлементы */
+.logo::before,
+.logo::after {
+    content: "SCHEMING";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #050505;
+}
+
+/* Красный слой глитча */
+.logo::before {
+    left: 2px;
+    text-shadow: -2px 0 #ff003c;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+/* Синий слой глитча */
+.logo::after {
+    left: -2px;
+    text-shadow: -2px 0 #00e6ff, 0 2px #33ff00;
+    clip: rect(85px, 450px, 140px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+/* Анимация свечения */
 @keyframes logoGlow{
     0%,100%{
         transform:scale(1);
-        text-shadow:
-            0 0 8px rgba(255,255,255,.15),
-            0 0 20px rgba(255,255,255,.08);
+        text-shadow: 0 0 8px rgba(255,255,255,.2);
     }
-
     50%{
-        transform:scale(1.04);
+        transform:scale(1.02);
         text-shadow:
-            0 0 15px rgba(255,255,255,.65),
-            0 0 35px rgba(255,255,255,.45),
-            0 0 80px rgba(255,255,255,.25);
+            0 0 15px rgba(255,255,255,.6),
+            0 0 40px rgba(255,255,255,.2);
     }
+}
+
+/* Глитч-эффект: случайные сдвиги полос по вертикали */
+@keyframes glitch-anim {
+  0% { clip: rect(31px, 9999px, 94px, 0); transform: skew(0.3deg); }
+  5% { clip: rect(112px, 9999px, 76px, 0); transform: skew(0.5deg); }
+  10% { clip: rect(85px, 9999px, 5px, 0); transform: skew(-0.2deg); }
+  15% { clip: rect(27px, 9999px, 115px, 0); transform: skew(0.8deg); }
+  20% { clip: rect(63px, 9999px, 132px, 0); transform: skew(-0.5deg); }
+  25% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); } /* Пауза в глитче */
+  100% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
+}
+
+@keyframes glitch-anim2 {
+  0% { clip: rect(76px, 9999px, 116px, 0); transform: skew(-0.5deg); }
+  5% { clip: rect(23px, 9999px, 95px, 0); transform: skew(0.2deg); }
+  10% { clip: rect(122px, 9999px, 140px, 0); transform: skew(0.7deg); }
+  15% { clip: rect(4px, 9999px, 45px, 0); transform: skew(-0.8deg); }
+  20% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
+  100% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
 }
 
 .loading{
     position:absolute;
     bottom:60px;
+    z-index: 2;
 
-    color:#777;
+    color:#555;
     font-size:14px;
     letter-spacing:6px;
     text-transform:uppercase;
@@ -74,20 +140,17 @@ body{
 }
 
 @keyframes pulse{
-    0%,100%{
-        opacity:.3;
-    }
-
-    50%{
-        opacity:1;
-    }
+    0%,100%{ opacity:.4; }
+    50%{ opacity:1; color: #aaa; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="logo">SCHEMING</div>
+<div class="logo-container">
+    <div class="logo">SCHEMING</div>
+</div>
 <div class="loading">LOADING...</div>
 
 <audio id="bgMusic" autoplay loop>
@@ -98,8 +161,14 @@ body{
 const music = document.getElementById('bgMusic');
 music.volume = 0.20;
 
-const loading = document.querySelector('.loading');
+// Принудительный мгновенный перезапуск аудио при завершении
+music.onended = function() {
+    music.currentTime = 0;
+    music.play().catch(error => console.log("Автовоспроизведение заблокировано браузером. Нужен клик на экране."));
+};
 
+// Анимация точек загрузки
+const loading = document.querySelector('.loading');
 let dots = 0;
 
 setInterval(() => {
