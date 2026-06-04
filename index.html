@@ -24,11 +24,11 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    background:#050505; /* Чуть мягче чисто черного */
+    background:#050505;
     position: relative;
 }
 
-/* Минималистичный цифровой фон (эффект шума/сетки) */
+/* Минималистичный цифровой фон */
 body::before {
     content: "";
     position: absolute;
@@ -45,26 +45,51 @@ body::before {
     pointer-events: none;
 }
 
-/* Контейнер для глитч-эффекта */
-.logo-container {
-    position: relative;
+/* Кнопка Мута (Вкл/Выкл звук) */
+.mute-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.3s, transform 0.2s;
+}
+
+.mute-btn:hover {
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.mute-btn svg {
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
+}
+
+/* Контейнер для центральных элементов */
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
     z-index: 2;
 }
 
-.logo{
+/* Текст с глитчем */
+.logo {
     position:relative;
-    font-size:clamp(80px,10vw,180px);
+    font-size:clamp(60px,10vw,160px);
     font-weight:900;
     font-style:italic;
     letter-spacing:10px;
     color:#fff;
     text-transform: uppercase;
-    
-    /* Основная анимация пульсации света */
     animation: logoGlow 4s ease-in-out infinite;
 }
 
-/* Создаем слои для глитча через псевдоэлементы */
 .logo::before,
 .logo::after {
     content: "SCHEMING";
@@ -76,7 +101,6 @@ body::before {
     background: #050505;
 }
 
-/* Красный слой глитча */
 .logo::before {
     left: 2px;
     text-shadow: -2px 0 #ff003c;
@@ -84,7 +108,6 @@ body::before {
     animation: glitch-anim 5s infinite linear alternate-reverse;
 }
 
-/* Синий слой глитча */
 .logo::after {
     left: -2px;
     text-shadow: -2px 0 #00e6ff, 0 2px #33ff00;
@@ -92,28 +115,37 @@ body::before {
     animation: glitch-anim2 5s infinite linear alternate-reverse;
 }
 
-/* Анимация свечения */
-@keyframes logoGlow{
-    0%,100%{
-        transform:scale(1);
-        text-shadow: 0 0 8px rgba(255,255,255,.2);
-    }
-    50%{
-        transform:scale(1.02);
-        text-shadow:
-            0 0 15px rgba(255,255,255,.6),
-            0 0 40px rgba(255,255,255,.2);
-    }
+/* Эквалайзер (Симметричный, как на 2-ом примере из картинки) */
+.equalizer-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 60px;
+    width: 300px;
 }
 
-/* Глитч-эффект: случайные сдвиги полос по вертикали */
+.bar {
+    width: 6px;
+    height: 6px; /* Минимальная высота, когда звука нет */
+    background: linear-gradient(to top, #00e6ff, #0088ff);
+    border-radius: 3px;
+    transition: height 0.05s ease;
+}
+
+/* Анимации */
+@keyframes logoGlow{
+    0%,100%{ transform:scale(1); text-shadow: 0 0 8px rgba(255,255,255,.2); }
+    50%{ transform:scale(1.02); text-shadow: 0 0 15px rgba(255,255,255,.6), 0 0 40px rgba(255,255,255,.2); }
+}
+
 @keyframes glitch-anim {
   0% { clip: rect(31px, 9999px, 94px, 0); transform: skew(0.3deg); }
   5% { clip: rect(112px, 9999px, 76px, 0); transform: skew(0.5deg); }
   10% { clip: rect(85px, 9999px, 5px, 0); transform: skew(-0.2deg); }
   15% { clip: rect(27px, 9999px, 115px, 0); transform: skew(0.8deg); }
   20% { clip: rect(63px, 9999px, 132px, 0); transform: skew(-0.5deg); }
-  25% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); } /* Пауза в глитче */
+  25% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
   100% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
 }
 
@@ -130,12 +162,10 @@ body::before {
     position:absolute;
     bottom:60px;
     z-index: 2;
-
     color:#555;
     font-size:14px;
     letter-spacing:6px;
     text-transform:uppercase;
-
     animation:pulse 2s infinite ease-in-out;
 }
 
@@ -148,29 +178,117 @@ body::before {
 
 <body>
 
-<div class="logo-container">
+<button class="mute-btn" id="muteBtn" title="Включить/Выключить звук">
+    <svg id="muteIcon" viewBox="0 0 24 24">
+        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zM3 9v6h4l5 5V4L7 9H3z"/>
+    </svg>
+</button>
+
+<div class="main-container">
     <div class="logo">SCHEMING</div>
+    
+    <div class="equalizer-container" id="equalizer"></div>
 </div>
+
 <div class="loading">LOADING...</div>
 
-<audio id="bgMusic" autoplay loop>
+<audio id="bgMusic" loop crossorigin="anonymous">
     <source src="sound.mp3" type="audio/mpeg">
 </audio>
 
 <script>
 const music = document.getElementById('bgMusic');
+const muteBtn = document.getElementById('muteBtn');
+const muteIcon = document.getElementById('muteIcon');
+const equalizerContainer = document.getElementById('equalizer');
+
 music.volume = 0.20;
 
-// Принудительный мгновенный перезапуск аудио при завершении
+// Создаем 32 полоски для эквалайзера
+const BAR_COUNT = 32;
+const bars = [];
+for (let i = 0; i < BAR_COUNT; i++) {
+    const bar = document.createElement('div');
+    bar.classList.add('bar');
+    equalizerContainer.appendChild(bar);
+    bars.push(bar);
+}
+
+let audioCtx, analyser, dataArray;
+let isAudioInitialized = false;
+
+// Инициализация аудио-анализатора (запускается только после действия пользователя)
+function initAudioAnalyser() {
+    if (isAudioInitialized) return;
+    
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaElementSource(music);
+    analyser = audioCtx.createAnalyser();
+    
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    
+    analyser.fftSize = 64; // Количество частот (из них берем нужные нам 32)
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+    
+    isAudioInitialized = true;
+    animateEqualizer();
+}
+
+// Функция анимации полосок
+function animateEqualizer() {
+    requestAnimationFrame(animateEqualizer);
+    if (!isAudioInitialized || music.paused) {
+        // Если музыка стоит на паузе, плавно опускаем полоски
+        bars.forEach(bar => bar.style.height = '6px');
+        return;
+    }
+    
+    analyser.getByteFrequencyData(dataArray);
+    
+    for (let i = 0; i < BAR_COUNT; i++) {
+        // Берем значение частоты (от 0 до 255)
+        let value = dataArray[i] || 0;
+        // Переводим в пиксели для высоты (макс 60px)
+        let height = (value / 255) * 54 + 6; 
+        bars[i].style.height = `${height}px`;
+    }
+}
+
+// Иконки для кнопки (Mute / Unmute)
+const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+
+// Логика кнопки переключения звука
+muteBtn.addEventListener('click', () => {
+    // Включаем AudioContext, если он еще не запущен
+    if (!isAudioInitialized) {
+        initAudioAnalyser();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    if (music.paused) {
+        music.play().then(() => {
+            muteIcon.innerHTML = iconSoundOn;
+        }).catch(err => console.log("Ошибка воспроизведения:", err));
+    } else {
+        music.pause();
+        muteIcon.innerHTML = iconSoundOff;
+    }
+});
+
+// Бесшовный перезапуск музыки
 music.onended = function() {
     music.currentTime = 0;
-    music.play().catch(error => console.log("Автовоспроизведение заблокировано браузером. Нужен клик на экране."));
+    music.play().catch(error => console.log("Перезапуск заблокирован"));
 };
 
-// Анимация точек загрузки
+// Текст загрузки (точки)
 const loading = document.querySelector('.loading');
 let dots = 0;
-
 setInterval(() => {
     dots = (dots + 1) % 4;
     loading.textContent = 'LOADING' + '.'.repeat(dots);
