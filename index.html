@@ -27,7 +27,7 @@ body{
     background:#0a0a0a;
 }
 
-/* Логотип */
+/* Текст SCHEMING */
 .logo{
     position:relative;
 
@@ -38,12 +38,17 @@ body{
 
     color:#ffffff;
 
+    animation:
+        logoFloat 4s ease-in-out infinite,
+        glowPulse 4s ease-in-out infinite;
+
     text-shadow:
-        0 0 10px rgba(255,255,255,.08),
+        0 0 5px rgba(255,255,255,.12),
+        0 0 15px rgba(255,255,255,.08),
         0 0 30px rgba(255,255,255,.04);
 }
 
-/* Блик */
+/* Белый блик по тексту */
 .logo::after{
     content:"SCHEMING";
 
@@ -55,11 +60,11 @@ body{
     background:linear-gradient(
         110deg,
         transparent 0%,
-        transparent 45%,
-        rgba(255,255,255,.15) 48%,
+        transparent 42%,
+        rgba(255,255,255,.2) 47%,
         rgba(255,255,255,1) 50%,
-        rgba(255,255,255,.15) 52%,
-        transparent 55%,
+        rgba(255,255,255,.2) 53%,
+        transparent 58%,
         transparent 100%
     );
 
@@ -69,16 +74,44 @@ body{
     -webkit-background-clip:text;
     background-clip:text;
 
-    animation:shine 2.3s linear infinite;
+    animation:shine 2.4s linear infinite;
 }
 
 @keyframes shine{
-    0%{
+    from{
         background-position:150% center;
     }
 
-    100%{
+    to{
         background-position:-150% center;
+    }
+}
+
+@keyframes logoFloat{
+    0%,100%{
+        transform:scale(1);
+        filter:brightness(1);
+    }
+
+    50%{
+        transform:scale(1.03);
+        filter:brightness(1.18);
+    }
+}
+
+@keyframes glowPulse{
+    0%,80%,100%{
+        text-shadow:
+            0 0 5px rgba(255,255,255,.12),
+            0 0 15px rgba(255,255,255,.08),
+            0 0 30px rgba(255,255,255,.04);
+    }
+
+    90%{
+        text-shadow:
+            0 0 10px rgba(255,255,255,.45),
+            0 0 25px rgba(255,255,255,.35),
+            0 0 55px rgba(255,255,255,.25);
     }
 }
 
