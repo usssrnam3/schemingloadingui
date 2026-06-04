@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -48,7 +49,6 @@ body{
         0 0 30px rgba(255,255,255,.04);
 }
 
-/* Белый блик по тексту */
 .logo::after{
     content:"SCHEMING";
 
@@ -81,7 +81,6 @@ body{
     from{
         background-position:150% center;
     }
-
     to{
         background-position:-150% center;
     }
@@ -146,7 +145,12 @@ body{
 <div class="logo">SCHEMING</div>
 <div class="loading">LOADING...</div>
 
+<audio id="bgMusic" autoplay loop>
+    <source src="sound.mp3" type="audio/mpeg">
+</audio>
+
 <script>
+// LOADING...
 const loading = document.querySelector('.loading');
 
 let dots = 0;
@@ -155,7 +159,16 @@ setInterval(() => {
     dots = (dots + 1) % 4;
     loading.textContent = 'LOADING' + '.'.repeat(dots);
 }, 500);
+
+// Музыка
+const music = document.getElementById('bgMusic');
+music.volume = 0.35;
+
+music.play().catch(() => {
+    console.log('Autoplay blocked');
+});
 </script>
 
 </body>
 </html>
+```
