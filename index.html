@@ -518,6 +518,100 @@ body::after {
     100% { opacity:0; transform:scale(1.45); filter:blur(34px); }
 }
 
+
+.meme-layer {
+    position:absolute;
+    inset:0;
+    z-index:4;
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.meme-gif {
+    position:absolute;
+    width:clamp(90px, 12vw, 220px);
+    max-height:220px;
+    object-fit:contain;
+    opacity:0;
+    pointer-events:none;
+    user-select:none;
+    mix-blend-mode:screen;
+    filter:
+        grayscale(.15)
+        contrast(1.15)
+        drop-shadow(0 0 18px rgba(255,255,255,.28))
+        drop-shadow(4px 0 10px rgba(255,0,60,.18))
+        drop-shadow(-4px 0 10px rgba(0,230,255,.18));
+    animation: memeAppear var(--meme-life, 4.8s) cubic-bezier(.2,.8,.18,1) forwards;
+}
+
+.meme-gif::selection {
+    background:transparent;
+}
+
+@keyframes memeAppear {
+    0% {
+        opacity:0;
+        transform:
+            translate(-50%, -50%)
+            scale(.35)
+            rotate(var(--meme-rot, 0deg))
+            skew(14deg);
+        filter:blur(12px) contrast(2) drop-shadow(0 0 22px rgba(255,255,255,.2));
+    }
+    8% {
+        opacity:.58;
+        transform:
+            translate(calc(-50% + 18px), calc(-50% - 8px))
+            scale(1.12)
+            rotate(calc(var(--meme-rot, 0deg) + 4deg))
+            skew(-8deg);
+        filter:blur(0) contrast(1.45) drop-shadow(0 0 28px rgba(255,255,255,.38));
+    }
+    16% {
+        opacity:.28;
+        transform:
+            translate(calc(-50% - 14px), calc(-50% + 6px))
+            scale(.94)
+            rotate(calc(var(--meme-rot, 0deg) - 5deg))
+            skew(5deg);
+    }
+    28% {
+        opacity:.46;
+        transform:
+            translate(-50%, -50%)
+            scale(1)
+            rotate(var(--meme-rot, 0deg))
+            skew(0deg);
+    }
+    68% {
+        opacity:.34;
+        transform:
+            translate(calc(-50% + var(--meme-drift-x, 0px)), calc(-50% + var(--meme-drift-y, 0px)))
+            scale(1.06)
+            rotate(calc(var(--meme-rot, 0deg) + 2deg));
+        filter:blur(.4px) contrast(1.2) drop-shadow(0 0 18px rgba(255,255,255,.28));
+    }
+    82% {
+        opacity:.5;
+        transform:
+            translate(calc(-50% + var(--meme-drift-x, 0px) - 20px), calc(-50% + var(--meme-drift-y, 0px)))
+            scale(1.18)
+            rotate(calc(var(--meme-rot, 0deg) - 8deg))
+            skew(-10deg);
+        filter:blur(0) contrast(1.8) drop-shadow(8px 0 14px rgba(255,0,60,.35)) drop-shadow(-8px 0 14px rgba(0,230,255,.35));
+    }
+    100% {
+        opacity:0;
+        transform:
+            translate(calc(-50% + var(--meme-drift-x, 0px)), calc(-50% + var(--meme-drift-y, 0px)))
+            scale(.72)
+            rotate(calc(var(--meme-rot, 0deg) + 16deg))
+            skew(10deg);
+        filter:blur(14px) contrast(2.2);
+    }
+}
+
 </style>
 </head>
 
@@ -535,6 +629,7 @@ body::after {
 <div class="digital-rain" id="digitalRain"></div>
 <div class="glitch-strip" id="glitchStrip"></div>
 <div class="summer-flare" id="summerFlare"></div>
+<div class="meme-layer" id="memeLayer"></div>
 
 <div class="aura-text" id="auraText">надо пофармить ауру..</div>
 
@@ -567,6 +662,7 @@ let vibeCtx;
 let digitalRain;
 let glitchStrip;
 let summerFlare;
+let memeLayer;
 let logo;
 let loadingEl;
 
@@ -589,6 +685,16 @@ const phrases = [
     'AURA+100',
     'AURAx0',
     'Z-CITY'
+];
+
+const memeGifs = [
+    'memas.gif',
+    'memas2.gif',
+    'memas3.gif',
+    'memas4.gif',
+    'memas5.gif',
+    'memas6.gif',
+    'memas7.gif'
 ];
 
 const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
@@ -894,6 +1000,57 @@ function randomLogoSwap() {
     }, 3600 + Math.random() * 2800);
 }
 
+
+function spawnMemeGif() {
+    if (!memeLayer || !memeGifs.length) return;
+
+    const img = document.createElement('img');
+    const src = memeGifs[Math.floor(Math.random() * memeGifs.length)];
+
+    img.className = 'meme-gif';
+    img.src = src;
+    img.alt = '';
+    img.draggable = false;
+
+    const x = 12 + Math.random() * 76;
+    const y = 12 + Math.random() * 76;
+    const size = 85 + Math.random() * 155;
+    const life = 3.4 + Math.random() * 3.2;
+    const rot = -18 + Math.random() * 36;
+    const driftX = -80 + Math.random() * 160;
+    const driftY = -45 + Math.random() * 90;
+
+    img.style.left = x + '%';
+    img.style.top = y + '%';
+    img.style.width = size + 'px';
+    img.style.setProperty('--meme-life', life + 's');
+    img.style.setProperty('--meme-rot', rot + 'deg');
+    img.style.setProperty('--meme-drift-x', driftX + 'px');
+    img.style.setProperty('--meme-drift-y', driftY + 'px');
+
+    memeLayer.appendChild(img);
+
+    if (Math.random() > 0.45) microGlitchBurst();
+
+    setTimeout(() => {
+        img.remove();
+    }, life * 1000 + 300);
+}
+
+function scheduleMemeGif() {
+    const delay = 5200 + Math.random() * 7200;
+
+    setTimeout(() => {
+        spawnMemeGif();
+
+        if (Math.random() > 0.68) {
+            setTimeout(spawnMemeGif, 420 + Math.random() * 900);
+        }
+
+        scheduleMemeGif();
+    }, delay);
+}
+
 function initPageAfterDomReady() {
     music = document.getElementById('bgMusic');
     muteBtn = document.getElementById('muteBtn');
@@ -906,6 +1063,7 @@ function initPageAfterDomReady() {
     digitalRain = document.getElementById('digitalRain');
     glitchStrip = document.getElementById('glitchStrip');
     summerFlare = document.getElementById('summerFlare');
+    memeLayer = document.getElementById('memeLayer');
     logo = document.querySelector('.logo');
     loadingEl = document.querySelector('.loading');
 
@@ -972,6 +1130,7 @@ function initPageAfterDomReady() {
         if (Math.random() > 0.45) microGlitchBurst();
     }, 2600);
     setInterval(randomLogoSwap, 7600);
+    scheduleMemeGif();
 }
 
 if (document.readyState === 'loading') {
