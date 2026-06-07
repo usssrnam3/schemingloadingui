@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCHEMING Loading v2</title>
+<title>SCHEMING Loading v3</title>
 
 <style>
 *{
@@ -70,7 +70,7 @@ body::after {
 }
 
 .mute-btn {
-    position: absolute;
+    position: fixed;
     top: 30px;
     right: 30px;
     background: rgba(255, 255, 255, 0.03);
@@ -83,7 +83,10 @@ body::after {
     align-items: center;
     color: #fff;
     cursor: pointer;
-    z-index: 30;
+    z-index: 9999;
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition: all 0.3s ease;
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.05);
 }
@@ -542,7 +545,7 @@ body::after {
 
 <div class="loading">LOADING...</div>
 
-<audio id="bgMusic" autoplay loop crossorigin="anonymous"></audio>
+<audio id="bgMusic" src="sound.mp3" autoplay loop preload="auto" playsinline></audio>
 
 <script>
 const music = document.getElementById('bgMusic');
@@ -552,12 +555,23 @@ const equalizerContainer = document.getElementById('equalizer');
 const auraText = document.getElementById('auraText');
 const screenFlash = document.getElementById('screenFlash');
 
-music.volume = 0.07;
+const MUSIC_VOLUME = 0.045;
+let userMuted = false;
+let audioStarted = false;
+let autoplayRetryTimer = null;
+let autoplayRetries = 0;
+
+music.volume = MUSIC_VOLUME;
 music.muted = false;
 music.preload = 'auto';
-music.src = 'sound.mp3?t=' + new Date().getTime();
+music.loop = true;
+music.setAttribute('playsinline', 'playsinline');
+// ВАЖНО для Garry's Mod loading screen: файл должен лежать рядом с HTML и называться ровно sound.mp3.
+// Без ?t=... — старый CEF/Awesomium иногда плохо отдаёт mp3 с query-параметрами.
+music.src = 'sound.mp3';
+music.load();
 
-const phrases = ['SCHEMING','SUMMER','AURA+100','AURAx0','Z-CITY'];
+const phrases = ['SCHEMING','SUMMER 2026','AURA+100','AURAx0','Z-CITY'];
 
 function getRandomPhrase() {
     return phrases[Math.floor(Math.random() * phrases.length)];
@@ -578,75 +592,118 @@ for (let i = 0; i < 32; i++) {
 const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
 const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
 
-let userMuted = false;
-
 function updateMuteIcon() {
     muteIcon.innerHTML = userMuted ? iconSoundOff : iconSoundOn;
+    muteBtn.title = userMuted ? 'Включить звук' : 'Выключить звук';
 }
 
-function startMusic() {
-    music.volume = 0.07;
-    music.muted = userMuted;
-
-    return music.play().then(() => {
-        updateMuteIcon();
-    }).catch(() => {
-        muteIcon.innerHTML = iconSoundOff;
-    });
-}
-
-function unlockAudioOnce() {
-    if (!userMuted) startMusic();
-    removeUnlockListeners();
-}
-
-function removeUnlockListeners() {
-    document.removeEventListener('click', unlockAudioOnce);
-    document.removeEventListener('pointerdown', unlockAudioOnce);
-    document.removeEventListener('touchstart', unlockAudioOnce);
-    document.removeEventListener('keydown', unlockAudioOnce);
-    window.removeEventListener('focus', startMusic);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    startMusic();
-});
-
-// В игровых WebView/iframe автоплей часто запрещен: запускаем звук после любого первого действия игрока.
-document.addEventListener('click', unlockAudioOnce, { once: true });
-document.addEventListener('pointerdown', unlockAudioOnce, { once: true });
-document.addEventListener('touchstart', unlockAudioOnce, { once: true });
-document.addEventListener('keydown', unlockAudioOnce, { once: true });
-window.addEventListener('focus', () => {
-    if (!userMuted) startMusic();
-});
-
-// Чтобы клик по самой кнопке не срабатывал как "первый клик по экрану" раньше логики mute.
-['pointerdown', 'touchstart', 'click'].forEach(eventName => {
-    muteBtn.addEventListener(eventName, (e) => {
-        e.stopPropagation();
-    });
-});
-
-muteBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    removeUnlockListeners();
-
-    userMuted = !userMuted;
-    music.muted = userMuted;
-
+function tryStartAudio() {
     if (userMuted) {
+        music.muted = true;
         updateMuteIcon();
         return;
     }
 
-    startMusic();
+    music.volume = MUSIC_VOLUME;
+    music.muted = false;
+
+    const playPromise = music.play();
+
+    if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.then(() => {
+            audioStarted = true;
+            updateMuteIcon();
+            stopAutoplayRetries();
+        }).catch(() => {
+            audioStarted = false;
+            // Это нормально для CEF/браузеров: звук разрешится после первого действия игрока.
+            updateMuteIcon();
+        });
+    } else {
+        // Старый Awesomium/CEF может не возвращать Promise.
+        audioStarted = true;
+        updateMuteIcon();
+    }
+}
+
+function startAutoplayRetries() {
+    stopAutoplayRetries();
+    autoplayRetries = 0;
+    autoplayRetryTimer = setInterval(() => {
+        autoplayRetries++;
+        if (!audioStarted && !userMuted) tryStartAudio();
+        if (audioStarted || autoplayRetries > 24) stopAutoplayRetries();
+    }, 500);
+}
+
+function stopAutoplayRetries() {
+    if (autoplayRetryTimer) {
+        clearInterval(autoplayRetryTimer);
+        autoplayRetryTimer = null;
+    }
+}
+
+function unlockAudio(e) {
+    if (e && e.target && muteBtn.contains(e.target)) return;
+    if (!userMuted) tryStartAudio();
+}
+
+// Garry's Mod/CEF: пробуем сразу и несколько раз после загрузки.
+document.addEventListener('DOMContentLoaded', () => {
+    updateMuteIcon();
+    tryStartAudio();
+    startAutoplayRetries();
 });
+window.addEventListener('load', () => {
+    tryStartAudio();
+    startAutoplayRetries();
+});
+window.addEventListener('focus', unlockAudio);
+document.addEventListener('click', unlockAudio, true);
+document.addEventListener('mousedown', unlockAudio, true);
+document.addEventListener('pointerdown', unlockAudio, true);
+document.addEventListener('touchstart', unlockAudio, true);
+document.addEventListener('keydown', unlockAudio, true);
+
+let lastMuteToggleAt = 0;
+
+function toggleMute(e) {
+    const now = Date.now();
+    if (now - lastMuteToggleAt < 350) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        }
+        return false;
+    }
+    lastMuteToggleAt = now;
+
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+    }
+
+    userMuted = !userMuted;
+    music.muted = userMuted;
+
+    if (!userMuted) {
+        tryStartAudio();
+    }
+
+    updateMuteIcon();
+    return false;
+}
+
+// Несколько обработчиков для старого CEF: где-то click может не долетать, зато mousedown работает.
+muteBtn.onclick = toggleMute;
+muteBtn.onmousedown = toggleMute;
+muteBtn.ontouchstart = toggleMute;
 
 music.onended = () => {
     music.currentTime = 0;
-    music.play().catch(err => console.log("Ошибка автозацикливания"));
+    tryStartAudio();
 };
 
 const loadingEl = document.querySelector('.loading');
