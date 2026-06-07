@@ -28,7 +28,6 @@ body{
     position: relative;
 }
 
-/* Минималистичный цифровой фон (эффект сетки и шума) */
 body::before {
     content: "";
     position: absolute;
@@ -36,16 +35,40 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
-        radial-gradient(circle at center, transparent 20%, #050505 80%),
-        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 36, 0.01), rgba(0, 0, 255, 0.03));
+    background:
+        radial-gradient(circle at center, transparent 18%, #050505 78%),
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
+        linear-gradient(90deg, rgba(255, 0, 60, 0.035), rgba(0, 255, 36, 0.015), rgba(0, 230, 255, 0.035));
     background-size: 100% 100%, 100% 4px, 6px 100%;
     z-index: 1;
     pointer-events: none;
+    animation: scanMove 8s linear infinite;
 }
 
-/* Кнопка Мута с яркой неоновой подсветкой */
+body::after {
+    content:"";
+    position:absolute;
+    inset:-20%;
+    z-index:1;
+    pointer-events:none;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,.04), transparent 18%),
+        radial-gradient(circle at 80% 70%, rgba(0,230,255,.035), transparent 22%),
+        radial-gradient(circle at 50% 50%, rgba(255,0,60,.025), transparent 25%);
+    filter: blur(18px);
+    animation: ambientDrift 12s ease-in-out infinite alternate;
+}
+
+@keyframes scanMove {
+    0% { background-position: 0 0, 0 0, 0 0; }
+    100% { background-position: 0 0, 0 60px, 36px 0; }
+}
+
+@keyframes ambientDrift {
+    0% { transform: translate(-2%, -2%) scale(1); opacity:.65; }
+    100% { transform: translate(2%, 3%) scale(1.08); opacity:1; }
+}
+
 .mute-btn {
     position: absolute;
     top: 30px;
@@ -58,41 +81,35 @@ body::before {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fff; 
+    color: #fff;
     cursor: pointer;
-    z-index: 10;
+    z-index: 30;
     transition: all 0.3s ease;
-    
-    /* Мягкое белое свечение вокруг кнопки */
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.05);
 }
 
-.mute-btn:hover { 
+.mute-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.6);
-    transform: scale(1.05);
-    /* Усиление подсветки при наведении */
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
+    transform: scale(1.05) rotate(4deg);
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.45), inset 0 0 12px rgba(255, 255, 255, 0.22);
 }
 
-.mute-btn svg { 
-    width: 24px; 
-    height: 24px; 
-    fill: currentColor; 
-    /* Дополнительное свечение самой иконки */
+.mute-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
     filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
 }
 
-/* Главный контейнер */
 .main-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 30px;
-    z-index: 2;
+    z-index: 5;
 }
 
-/* Текст SCHEMING с глитчем */
 .logo {
     position:relative;
     font-size:clamp(60px,10vw,160px);
@@ -101,42 +118,44 @@ body::before {
     letter-spacing:10px;
     color:#fff;
     text-transform: uppercase;
-    animation: logoGlow 4s ease-in-out infinite;
+    animation: logoGlow 4s ease-in-out infinite, logoFloat 6s ease-in-out infinite;
     user-select: none;
+    text-shadow: 0 0 10px rgba(255,255,255,.25);
 }
 
 .logo::before, .logo::after {
     content: "SCHEMING";
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: #050505;
+    overflow:hidden;
 }
 
 .logo::before {
-    left: 2px; 
-    text-shadow: -2px 0 #ff003c; 
+    left: 2px;
+    text-shadow: -2px 0 #ff003c, 0 0 16px rgba(255,0,60,.5);
     clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim 5s infinite linear alternate-reverse;
+    animation: glitch-anim 4.5s infinite linear alternate-reverse;
 }
 
 .logo::after {
-    left: -2px; 
-    text-shadow: -2px 0 #00e6ff, 0 2px #33ff00; 
+    left: -2px;
+    text-shadow: -2px 0 #00e6ff, 0 2px #33ff00, 0 0 16px rgba(0,230,255,.45);
     clip: rect(85px, 450px, 140px, 0);
-    animation: glitch-anim2 5s infinite linear alternate-reverse;
+    animation: glitch-anim2 5.2s infinite linear alternate-reverse;
 }
 
-/* Белый эквалайзер с автономной CSS анимацией */
 .equalizer-container {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    height: 60px;
+    height: 64px;
     width: 300px;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,.18));
 }
 
 .bar {
@@ -144,55 +163,188 @@ body::before {
     height: 6px;
     background: #ffffff;
     border-radius: 3px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-    
-    /* Запуск прыжков сразу при старте без задержек */
-    animation: bounce 1.2s ease-in-out infinite alternate;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
+    animation: bounce 1.15s cubic-bezier(.45,0,.25,1.5) infinite alternate;
 }
 
-/* Разная скорость и задержка анимации для эффекта хаотичности частот */
-.bar:nth-child(2n) { animation-delay: 0.2s; animation-duration: 0.8s; }
-.bar:nth-child(3n) { animation-delay: 0.4s; animation-duration: 1.1s; }
-.bar:nth-child(4n) { animation-delay: 0.1s; animation-duration: 0.9s; }
-.bar:nth-child(5n) { animation-delay: 0.6s; animation-duration: 1.3s; }
+.bar:nth-child(2n) { animation-delay: 0.18s; animation-duration: 0.8s; }
+.bar:nth-child(3n) { animation-delay: 0.34s; animation-duration: 1.08s; }
+.bar:nth-child(4n) { animation-delay: 0.08s; animation-duration: 0.9s; }
+.bar:nth-child(5n) { animation-delay: 0.52s; animation-duration: 1.3s; }
+.bar:nth-child(7n) { animation-delay: 0.12s; animation-duration: 0.65s; }
 
 @keyframes bounce {
-    0% { height: 6px; }
-    100% { height: 52px; }
+    0% { height: 6px; opacity: .45; transform: translateY(8px); }
+    45% { opacity: 1; }
+    100% { height: 56px; opacity: .95; transform: translateY(-4px); }
 }
 
-/* Анимации глитча и пульсации */
+@keyframes logoFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-8px) scale(1.035); }
+}
+
 @keyframes logoGlow{
-    0%,100%{ transform:scale(1); text-shadow: 0 0 8px rgba(255,255,255,.15); }
-    50%{ transform:scale(1.04); text-shadow: 0 0 15px rgba(255,255,255,.65), 0 0 35px rgba(255,255,255,.45); }
+    0%,100%{ text-shadow: 0 0 8px rgba(255,255,255,.15); }
+    50%{ text-shadow: 0 0 15px rgba(255,255,255,.65), 0 0 35px rgba(255,255,255,.45); }
 }
 
 @keyframes glitch-anim {
-  0% { clip: rect(31px, 9999px, 94px, 0); transform: skew(0.3deg); }
-  5% { clip: rect(112px, 9999px, 76px, 0); transform: skew(0.5deg); }
-  25% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
-  100% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
+  0% { clip: rect(31px, 9999px, 94px, 0); transform: skew(0.3deg) translateX(0); }
+  4% { clip: rect(112px, 9999px, 76px, 0); transform: skew(0.5deg) translateX(4px); }
+  8% { clip: rect(22px, 9999px, 48px, 0); transform: skew(-0.4deg) translateX(-3px); }
+  14% { clip: rect(70px, 9999px, 122px, 0); transform: skew(0.8deg) translateX(2px); }
+  22%,100% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
 }
 
 @keyframes glitch-anim2 {
-  0% { clip: rect(76px, 9999px, 116px, 0); transform: skew(-0.5deg); }
-  20% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
-  100% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
+  0% { clip: rect(76px, 9999px, 116px, 0); transform: skew(-0.5deg) translateX(0); }
+  6% { clip: rect(20px, 9999px, 64px, 0); transform: skew(0.7deg) translateX(-5px); }
+  13% { clip: rect(98px, 9999px, 138px, 0); transform: skew(-0.9deg) translateX(3px); }
+  20%,100% { clip: rect(0px, 0px, 0px, 0px); transform: skew(0deg); }
 }
 
 .loading{
-    position:absolute; 
-    bottom:60px; 
-    z-index: 2; 
-    color:#777; 
+    position:absolute;
+    bottom:60px;
+    z-index: 5;
+    color:#777;
     font-size:14px;
-    letter-spacing:6px; 
-    text-transform:uppercase; 
-    animation:pulse 2s infinite ease-in-out; 
+    letter-spacing:6px;
+    text-transform:uppercase;
+    animation:pulse 2s infinite ease-in-out;
     user-select: none;
 }
 
-@keyframes pulse{ 0%,100%{ opacity:.3; } 50%{ opacity:1; } }
+@keyframes pulse{
+    0%,100%{ opacity:.3; filter: blur(.2px); }
+    50%{ opacity:1; filter: blur(0); }
+}
+
+.aura-text {
+    position: absolute;
+    z-index: 3;
+    color: rgba(255,255,255,.08);
+    font-size: clamp(22px, 4vw, 70px);
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 4px;
+    text-transform: lowercase;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0;
+    white-space: nowrap;
+    text-shadow:
+        2px 0 rgba(255,0,60,.25),
+        -2px 0 rgba(0,230,255,.25),
+        0 0 25px rgba(255,255,255,.12);
+}
+
+.aura-text.soft {
+    animation: auraSoft 3.4s ease-in-out forwards;
+}
+
+.aura-text.full {
+    z-index: 25;
+    left: 50% !important;
+    top: 50% !important;
+    font-size: clamp(55px, 12vw, 190px);
+    color: rgba(255,255,255,.92);
+    animation: auraFullGlitch .58s steps(2, end) forwards;
+}
+
+.aura-text.full::before,
+.aura-text.full::after {
+    content:"надо пофармить ауру..";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+}
+
+.aura-text.full::before {
+    color:#ff003c;
+    transform:translateX(-10px);
+    clip-path: inset(0 0 55% 0);
+}
+
+.aura-text.full::after {
+    color:#00e6ff;
+    transform:translateX(10px);
+    clip-path: inset(45% 0 0 0);
+}
+
+@keyframes auraSoft {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.92) skew(0deg);
+        filter: blur(8px);
+    }
+    20% {
+        opacity: .18;
+        filter: blur(1px);
+    }
+    75% {
+        opacity: .12;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.08) skew(-2deg);
+        filter: blur(10px);
+    }
+}
+
+@keyframes auraFullGlitch {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.4) skew(15deg);
+        filter: blur(12px);
+    }
+    18% {
+        opacity: 1;
+        transform: translate(-48%, -52%) scale(1.25) skew(-8deg);
+        filter: blur(0);
+    }
+    32% {
+        transform: translate(-52%, -48%) scale(1.4) skew(10deg);
+        text-shadow:
+            -8px 0 #ff003c,
+            8px 0 #00e6ff,
+            0 0 50px #fff;
+    }
+    55% {
+        transform: translate(-50%, -50%) scale(1.15) skew(-3deg);
+    }
+    75% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.6);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2.2);
+        filter: blur(18px);
+    }
+}
+
+.screen-flash {
+    position:absolute;
+    inset:0;
+    z-index:24;
+    pointer-events:none;
+    opacity:0;
+    background:rgba(255,255,255,.08);
+}
+
+.screen-flash.active {
+    animation: flashHit .35s steps(2, end) forwards;
+}
+
+@keyframes flashHit {
+    0% { opacity:0; }
+    20% { opacity:.5; }
+    45% { opacity:0; }
+    65% { opacity:.25; }
+    100% { opacity:0; }
+}
 </style>
 </head>
 
@@ -203,6 +355,9 @@ body::before {
         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
     </svg>
 </button>
+
+<div class="screen-flash" id="screenFlash"></div>
+<div class="aura-text" id="auraText">надо пофармить ауру..</div>
 
 <div class="main-container">
     <div class="logo">SCHEMING</div>
@@ -218,13 +373,12 @@ const music = document.getElementById('bgMusic');
 const muteBtn = document.getElementById('muteBtn');
 const muteIcon = document.getElementById('muteIcon');
 const equalizerContainer = document.getElementById('equalizer');
+const auraText = document.getElementById('auraText');
+const screenFlash = document.getElementById('screenFlash');
 
 music.volume = 0.20;
-
-// Обход кэша: принудительно заставляем браузер загрузить новый файл sound.mp3
 music.src = 'sound.mp3?t=' + new Date().getTime();
 
-// Автоматическая генерация 32 полосок для эквалайзера
 for (let i = 0; i < 32; i++) {
     const bar = document.createElement('div');
     bar.classList.add('bar');
@@ -234,7 +388,6 @@ for (let i = 0; i < 32; i++) {
 const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
 const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
 
-// Попытка принудительно запустить звук сразу при загрузке DOM
 document.addEventListener("DOMContentLoaded", () => {
     music.play().then(() => {
         muteIcon.innerHTML = iconSoundOn;
@@ -244,29 +397,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Глобальная функция-активатор звука
 function handleGlobalClick() {
     if (music.paused) {
-        music.play().then(() => { 
-            muteIcon.innerHTML = iconSoundOn; 
+        music.play().then(() => {
+            muteIcon.innerHTML = iconSoundOn;
         }).catch(e => console.log(e));
     }
     document.body.removeEventListener('click', handleGlobalClick);
 }
 
-// Слушаем первый клик по экрану для обхода ограничений автоплея
 document.body.addEventListener('click', handleGlobalClick);
 
-// Логика работы кнопки Мута (Вкл/Выкл)
 muteBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Отключаем всплытие, чтобы не конфликтовать с кликом по body
-    
-    // Снимаем глобальный клик, так как пользователь уже кликнул по интерфейсу целенаправленно
+    e.stopPropagation();
     document.body.removeEventListener('click', handleGlobalClick);
 
     if (music.paused) {
-        music.play().then(() => { 
-            muteIcon.innerHTML = iconSoundOn; 
+        music.play().then(() => {
+            muteIcon.innerHTML = iconSoundOn;
         }).catch(err => console.log(err));
     } else {
         music.pause();
@@ -274,19 +422,52 @@ muteBtn.addEventListener('click', (e) => {
     }
 });
 
-// Бесшовный принудительный перезапуск трека в конце
-music.onended = () => { 
-    music.currentTime = 0; 
-    music.play().catch(err => console.log("Ошибка автозацикливания")); 
+music.onended = () => {
+    music.currentTime = 0;
+    music.play().catch(err => console.log("Ошибка автозацикливания"));
 };
 
-// Скрипт точек LOADING...
 const loadingEl = document.querySelector('.loading');
 let dots = 0;
 setInterval(() => {
     dots = (dots + 1) % 4;
     loadingEl.textContent = 'LOADING' + '.'.repeat(dots);
 }, 500);
+
+function randomAuraSoft() {
+    auraText.className = 'aura-text';
+    const x = 15 + Math.random() * 70;
+    const y = 15 + Math.random() * 70;
+    auraText.style.left = x + '%';
+    auraText.style.top = y + '%';
+    void auraText.offsetWidth;
+    auraText.classList.add('soft');
+}
+
+function auraFullGlitch() {
+    auraText.className = 'aura-text';
+    auraText.style.left = '50%';
+    auraText.style.top = '50%';
+    screenFlash.className = 'screen-flash';
+    void auraText.offsetWidth;
+    void screenFlash.offsetWidth;
+    screenFlash.classList.add('active');
+    auraText.classList.add('full');
+}
+
+setInterval(() => {
+    if (Math.random() > 0.25) {
+        randomAuraSoft();
+    } else {
+        randomAuraSoft();
+        setTimeout(() => {
+            auraText.className = 'aura-text';
+        }, 900);
+        setTimeout(() => {
+            auraFullGlitch();
+        }, 1150);
+    }
+}, 4200);
 </script>
 
 </body>
