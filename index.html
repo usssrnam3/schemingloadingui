@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCHEMING Loading</title>
+<title>SCHEMING Loading v2</title>
 
 <style>
 *{
@@ -124,7 +124,7 @@ body::after {
 }
 
 .logo::before, .logo::after {
-    content: "SCHEMING";
+    content: attr(data-text);
     position: absolute;
     top: 0;
     left: 0;
@@ -255,7 +255,7 @@ body::after {
 
 .aura-text.full::before,
 .aura-text.full::after {
-    content:"надо пофармить ауру..";
+    content: attr(data-text);
     position:absolute;
     inset:0;
     pointer-events:none;
@@ -345,6 +345,176 @@ body::after {
     65% { opacity:.25; }
     100% { opacity:0; }
 }
+
+.vibe-canvas {
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:2;
+    pointer-events:none;
+    opacity:.72;
+    mix-blend-mode:screen;
+}
+
+.depth-fog {
+    position:absolute;
+    inset:-15%;
+    z-index:2;
+    pointer-events:none;
+    background:
+        conic-gradient(from 180deg at 50% 50%, transparent, rgba(255,255,255,.035), transparent, rgba(0,230,255,.045), transparent, rgba(255,0,60,.035), transparent),
+        radial-gradient(circle at 50% 48%, rgba(255,255,255,.06), transparent 24%, rgba(0,0,0,.15) 54%, rgba(0,0,0,.72) 100%);
+    filter: blur(10px);
+    animation: fogSpin 18s linear infinite, fogPulse 6s ease-in-out infinite;
+}
+
+@keyframes fogSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes fogPulse {
+    0%,100% { opacity:.45; }
+    50% { opacity:.82; }
+}
+
+.digital-rain {
+    position:absolute;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.rune {
+    position:absolute;
+    color:rgba(255,255,255,.14);
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:2px;
+    text-shadow:0 0 10px rgba(255,255,255,.2), 2px 0 rgba(255,0,60,.15), -2px 0 rgba(0,230,255,.15);
+    animation:runeFall linear forwards;
+    white-space:nowrap;
+}
+
+@keyframes runeFall {
+    0% { opacity:0; transform:translateY(-20px) skewX(8deg); filter:blur(4px); }
+    12% { opacity:.75; filter:blur(0); }
+    85% { opacity:.2; }
+    100% { opacity:0; transform:translateY(120vh) skewX(-10deg); filter:blur(6px); }
+}
+
+.glitch-strip {
+    position:absolute;
+    left:-10%;
+    width:120%;
+    height:2px;
+    z-index:22;
+    pointer-events:none;
+    opacity:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.75), rgba(0,230,255,.55), rgba(255,0,60,.55), transparent);
+    box-shadow:0 0 18px rgba(255,255,255,.5);
+    transform:translateX(-20%);
+}
+
+.glitch-strip.active {
+    animation:stripSlash .42s steps(3,end) forwards;
+}
+
+@keyframes stripSlash {
+    0% { opacity:0; transform:translateX(-25%) scaleY(1); }
+    15% { opacity:.95; transform:translateX(0) scaleY(8); }
+    45% { opacity:.5; transform:translateX(8%) scaleY(2); }
+    100% { opacity:0; transform:translateX(25%) scaleY(1); }
+}
+
+.logo::marker { display:none; }
+.logo {
+    filter: drop-shadow(0 22px 32px rgba(0,0,0,.75));
+}
+
+.main-container::before {
+    content:"";
+    position:absolute;
+    width:min(80vw, 880px);
+    height:min(38vw, 360px);
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.08), rgba(0,230,255,.035) 30%, rgba(255,0,60,.025) 48%, transparent 70%);
+    filter:blur(22px);
+    z-index:-1;
+    animation:haloBreath 5s ease-in-out infinite;
+}
+
+@keyframes haloBreath {
+    0%,100% { opacity:.45; transform:scale(.96); }
+    50% { opacity:.9; transform:scale(1.08); }
+}
+
+
+.logo.logo-switching {
+    animation: logoSwitchHit .72s steps(3, end), logoSpark .12s linear infinite;
+}
+
+.logo.logo-summer {
+    text-shadow:
+        0 0 16px rgba(255,255,255,.9),
+        0 0 32px rgba(255,210,80,.72),
+        0 0 70px rgba(255,120,0,.35);
+}
+
+.logo.logo-summer::before {
+    text-shadow: -3px 0 #ffb000, 0 0 22px rgba(255,185,40,.8);
+}
+
+.logo.logo-summer::after {
+    text-shadow: 3px 0 #ffffff, -3px 0 #ff4d00, 0 0 22px rgba(255,120,0,.65);
+}
+
+.logo.logo-naplyvich {
+    letter-spacing: 6px;
+    text-shadow:
+        -4px 0 rgba(255,0,60,.8),
+        4px 0 rgba(0,230,255,.8),
+        0 0 42px rgba(255,255,255,.75);
+}
+
+@keyframes logoSwitchHit {
+    0% { transform: translateY(0) scale(1) skew(0); filter: blur(0); }
+    18% { transform: translate(-10px, -4px) scale(1.08) skew(8deg); filter: blur(1px); }
+    36% { transform: translate(12px, 3px) scale(.96) skew(-10deg); }
+    58% { transform: translate(-4px, 0) scale(1.13) skew(4deg); text-shadow: -12px 0 #ff003c, 12px 0 #00e6ff, 0 0 70px #fff; }
+    100% { transform: translateY(0) scale(1) skew(0); filter: blur(0); }
+}
+
+@keyframes logoSpark {
+    0%,100% { opacity:1; }
+    30% { opacity:.35; }
+    60% { opacity:1; }
+    80% { opacity:.55; }
+}
+
+.summer-flare {
+    position:absolute;
+    inset:0;
+    z-index:4;
+    pointer-events:none;
+    opacity:0;
+    background:
+        radial-gradient(circle at 50% 45%, rgba(255,210,90,.22), transparent 24%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.08), transparent 36%);
+}
+
+.summer-flare.active {
+    animation: summerFlare 1.2s ease-out forwards;
+}
+
+@keyframes summerFlare {
+    0% { opacity:0; transform:scale(.8); filter:blur(18px); }
+    25% { opacity:1; }
+    100% { opacity:0; transform:scale(1.45); filter:blur(34px); }
+}
+
 </style>
 </head>
 
@@ -357,10 +527,16 @@ body::after {
 </button>
 
 <div class="screen-flash" id="screenFlash"></div>
+<canvas class="vibe-canvas" id="vibeCanvas"></canvas>
+<div class="depth-fog"></div>
+<div class="digital-rain" id="digitalRain"></div>
+<div class="glitch-strip" id="glitchStrip"></div>
+<div class="summer-flare" id="summerFlare"></div>
+
 <div class="aura-text" id="auraText">надо пофармить ауру..</div>
 
 <div class="main-container">
-    <div class="logo">SCHEMING</div>
+    <div class="logo" data-text="SCHEMING">SCHEMING</div>
     <div class="equalizer-container" id="equalizer"></div>
 </div>
 
@@ -376,8 +552,22 @@ const equalizerContainer = document.getElementById('equalizer');
 const auraText = document.getElementById('auraText');
 const screenFlash = document.getElementById('screenFlash');
 
-music.volume = 0.20;
+music.volume = 0.07;
+music.muted = false;
+music.preload = 'auto';
 music.src = 'sound.mp3?t=' + new Date().getTime();
+
+const phrases = ['SCHEMING','SUMMER','AURA+100','AURAx0','Z-CITY'];
+
+function getRandomPhrase() {
+    return phrases[Math.floor(Math.random() * phrases.length)];
+}
+
+function setAuraPhrase() {
+    const phrase = getRandomPhrase();
+    auraText.textContent = phrase;
+    auraText.setAttribute('data-text', phrase);
+}
 
 for (let i = 0; i < 32; i++) {
     const bar = document.createElement('div');
@@ -388,38 +578,70 @@ for (let i = 0; i < 32; i++) {
 const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
 const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
 
-document.addEventListener("DOMContentLoaded", () => {
-    music.play().then(() => {
-        muteIcon.innerHTML = iconSoundOn;
+let userMuted = false;
+
+function updateMuteIcon() {
+    muteIcon.innerHTML = userMuted ? iconSoundOff : iconSoundOn;
+}
+
+function startMusic() {
+    music.volume = 0.07;
+    music.muted = userMuted;
+
+    return music.play().then(() => {
+        updateMuteIcon();
     }).catch(() => {
-        console.log("Автоплей ограничен движком, звук активируется по первому клику.");
         muteIcon.innerHTML = iconSoundOff;
+    });
+}
+
+function unlockAudioOnce() {
+    if (!userMuted) startMusic();
+    removeUnlockListeners();
+}
+
+function removeUnlockListeners() {
+    document.removeEventListener('click', unlockAudioOnce);
+    document.removeEventListener('pointerdown', unlockAudioOnce);
+    document.removeEventListener('touchstart', unlockAudioOnce);
+    document.removeEventListener('keydown', unlockAudioOnce);
+    window.removeEventListener('focus', startMusic);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    startMusic();
+});
+
+// В игровых WebView/iframe автоплей часто запрещен: запускаем звук после любого первого действия игрока.
+document.addEventListener('click', unlockAudioOnce, { once: true });
+document.addEventListener('pointerdown', unlockAudioOnce, { once: true });
+document.addEventListener('touchstart', unlockAudioOnce, { once: true });
+document.addEventListener('keydown', unlockAudioOnce, { once: true });
+window.addEventListener('focus', () => {
+    if (!userMuted) startMusic();
+});
+
+// Чтобы клик по самой кнопке не срабатывал как "первый клик по экрану" раньше логики mute.
+['pointerdown', 'touchstart', 'click'].forEach(eventName => {
+    muteBtn.addEventListener(eventName, (e) => {
+        e.stopPropagation();
     });
 });
 
-function handleGlobalClick() {
-    if (music.paused) {
-        music.play().then(() => {
-            muteIcon.innerHTML = iconSoundOn;
-        }).catch(e => console.log(e));
-    }
-    document.body.removeEventListener('click', handleGlobalClick);
-}
-
-document.body.addEventListener('click', handleGlobalClick);
-
 muteBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
-    document.body.removeEventListener('click', handleGlobalClick);
+    removeUnlockListeners();
 
-    if (music.paused) {
-        music.play().then(() => {
-            muteIcon.innerHTML = iconSoundOn;
-        }).catch(err => console.log(err));
-    } else {
-        music.pause();
-        muteIcon.innerHTML = iconSoundOff;
+    userMuted = !userMuted;
+    music.muted = userMuted;
+
+    if (userMuted) {
+        updateMuteIcon();
+        return;
     }
+
+    startMusic();
 });
 
 music.onended = () => {
@@ -435,6 +657,7 @@ setInterval(() => {
 }, 500);
 
 function randomAuraSoft() {
+    setAuraPhrase();
     auraText.className = 'aura-text';
     const x = 15 + Math.random() * 70;
     const y = 15 + Math.random() * 70;
@@ -445,6 +668,7 @@ function randomAuraSoft() {
 }
 
 function auraFullGlitch() {
+    setAuraPhrase();
     auraText.className = 'aura-text';
     auraText.style.left = '50%';
     auraText.style.top = '50%';
@@ -452,6 +676,7 @@ function auraFullGlitch() {
     void auraText.offsetWidth;
     void screenFlash.offsetWidth;
     screenFlash.classList.add('active');
+    if (typeof microGlitchBurst === 'function') microGlitchBurst();
     auraText.classList.add('full');
 }
 
@@ -468,6 +693,196 @@ setInterval(() => {
         }, 1150);
     }
 }, 4200);
+
+
+const vibeCanvas = document.getElementById('vibeCanvas');
+const vibeCtx = vibeCanvas.getContext('2d');
+const digitalRain = document.getElementById('digitalRain');
+const glitchStrip = document.getElementById('glitchStrip');
+const summerFlare = document.getElementById('summerFlare');
+let particles = [];
+let sparks = [];
+
+function resizeVibeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    vibeCanvas.width = Math.floor(window.innerWidth * dpr);
+    vibeCanvas.height = Math.floor(window.innerHeight * dpr);
+    vibeCanvas.style.width = window.innerWidth + 'px';
+    vibeCanvas.style.height = window.innerHeight + 'px';
+    vibeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const amount = Math.min(90, Math.floor(window.innerWidth / 18));
+    particles = Array.from({ length: amount }, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: (Math.random() - 0.5) * 0.28,
+        r: Math.random() * 1.8 + 0.45,
+        a: Math.random() * 0.35 + 0.08
+    }));
+}
+
+function drawVibe() {
+    vibeCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < -20) p.x = window.innerWidth + 20;
+        if (p.x > window.innerWidth + 20) p.x = -20;
+        if (p.y < -20) p.y = window.innerHeight + 20;
+        if (p.y > window.innerHeight + 20) p.y = -20;
+
+        vibeCtx.beginPath();
+        vibeCtx.fillStyle = `rgba(255,255,255,${p.a})`;
+        vibeCtx.shadowBlur = 12;
+        vibeCtx.shadowColor = 'rgba(255,255,255,.45)';
+        vibeCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        vibeCtx.fill();
+    }
+
+    vibeCtx.shadowBlur = 0;
+    for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+            const a = particles[i];
+            const b = particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 135) {
+                vibeCtx.strokeStyle = `rgba(255,255,255,${(1 - dist / 135) * 0.045})`;
+                vibeCtx.lineWidth = 1;
+                vibeCtx.beginPath();
+                vibeCtx.moveTo(a.x, a.y);
+                vibeCtx.lineTo(b.x, b.y);
+                vibeCtx.stroke();
+            }
+        }
+    }
+
+    sparks = sparks.filter(s => s.life > 0);
+    for (const s of sparks) {
+        s.life -= 0.018;
+        s.x += s.vx;
+        s.y += s.vy;
+        vibeCtx.fillStyle = `rgba(255,255,255,${Math.max(0, s.life)})`;
+        vibeCtx.fillRect(s.x, s.y, s.w, 2);
+    }
+
+    requestAnimationFrame(drawVibe);
+}
+
+function spawnRunes() {
+    const rune = document.createElement('div');
+    rune.className = 'rune';
+    const tokens = ['SCHEMING','SUMMER 2026','AURA+100','AURAx0','Z-CITY'];
+    rune.textContent = tokens[Math.floor(Math.random() * tokens.length)];
+    rune.style.left = Math.random() * 100 + '%';
+    rune.style.animationDuration = (4 + Math.random() * 5) + 's';
+    rune.style.opacity = (0.35 + Math.random() * 0.5).toString();
+    digitalRain.appendChild(rune);
+    setTimeout(() => rune.remove(), 9500);
+}
+
+function microGlitchBurst() {
+    glitchStrip.style.top = (10 + Math.random() * 80) + '%';
+    glitchStrip.className = 'glitch-strip';
+    void glitchStrip.offsetWidth;
+    glitchStrip.classList.add('active');
+
+    for (let i = 0; i < 18; i++) {
+        sparks.push({
+            x: window.innerWidth * (0.25 + Math.random() * 0.5),
+            y: window.innerHeight * (0.35 + Math.random() * 0.3),
+            vx: (Math.random() - 0.5) * 18,
+            vy: (Math.random() - 0.5) * 5,
+            w: 8 + Math.random() * 42,
+            life: 0.35 + Math.random() * 0.45
+        });
+    }
+}
+
+
+const logo = document.querySelector('.logo');
+
+function syncLogoLayers(){
+    logo.setAttribute('data-text', logo.textContent);
+}
+syncLogoLayers();
+
+function setMainLogo(text) {
+    logo.classList.remove('logo-summer', 'logo-naplyvich');
+    logo.classList.add('logo-switching');
+
+    setTimeout(() => {
+        logo.textContent = text;
+        syncLogoLayers();
+
+        if (text === 'SUMMER 2026') {
+            logo.classList.add('logo-summer');
+            if (summerFlare) {
+                summerFlare.className = 'summer-flare';
+                void summerFlare.offsetWidth;
+                summerFlare.classList.add('active');
+            }
+            spawnLogoSparks(34, true);
+        }
+
+        if (text === 'NAPLYVICH') {
+            logo.classList.add('logo-naplyvich');
+            spawnLogoSparks(26, false);
+        }
+
+        microGlitchBurst();
+    }, 120);
+
+    setTimeout(() => {
+        logo.classList.remove('logo-switching');
+    }, 760);
+}
+
+function spawnLogoSparks(count = 24, warm = false) {
+    for (let i = 0; i < count; i++) {
+        sparks.push({
+            x: window.innerWidth * (0.35 + Math.random() * 0.3),
+            y: window.innerHeight * (0.39 + Math.random() * 0.16),
+            vx: (Math.random() - 0.5) * (warm ? 24 : 18),
+            vy: (Math.random() - 0.5) * (warm ? 11 : 7),
+            w: warm ? 14 + Math.random() * 54 : 8 + Math.random() * 42,
+            life: warm ? 0.55 + Math.random() * 0.55 : 0.35 + Math.random() * 0.45
+        });
+    }
+}
+
+function randomLogoSwap() {
+    const r = Math.random();
+    let temp = null;
+
+    if (r > 0.94) temp = 'NAPLYVICH';
+    else if (r > 0.74) temp = 'SUMMER 2026';
+
+    if (!temp || logo.textContent !== 'SCHEMING') return;
+
+    setMainLogo(temp);
+
+    setTimeout(() => {
+        setMainLogo('SCHEMING');
+        setTimeout(() => {
+            logo.classList.remove('logo-summer', 'logo-naplyvich');
+        }, 150);
+    }, 3600 + Math.random() * 2800);
+}
+
+setInterval(randomLogoSwap, 7600);
+
+resizeVibeCanvas();
+drawVibe();
+window.addEventListener('resize', resizeVibeCanvas);
+setInterval(spawnRunes, 360);
+setInterval(() => {
+    if (Math.random() > 0.45) microGlitchBurst();
+}, 2600);
+
 </script>
 
 </body>
