@@ -646,7 +646,7 @@ body::after {
 /*
     CLEAN GMOD AUDIO + VISUALS VERSION
     Музыка берётся из той же папки, где лежит index.html:
-    sound.mp3, sound2.mp3, sound3.mp3, sound4.mp3, sound5.mp3
+    sound2.mp3, sound3.mp3, sound4.mp3, sound5.mp3, sound6.mp3
 */
 
 const DEFAULT_MUSIC_VOLUME = 0.20;
@@ -672,11 +672,11 @@ let sparks = [];
 let dots = 0;
 
 const playlist = [
-    'sound2.mp3',
-    'sound3.mp3',
-    'sound4.mp3',
-    'sound5.mp3',
-    'sound6.mp3'
+    { file: 'sound2.mp3', weight: 10 },
+    { file: 'sound3.mp3', weight: 10 },
+    { file: 'sound4.mp3', weight: 25 }, // средний шанс
+    { file: 'sound5.mp3', weight: 50 }, // самый большой шанс
+    { file: 'sound6.mp3', weight: 10 }
 ];
 
 const phrases = [
@@ -700,25 +700,36 @@ const memeGifs = [
 const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
 const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
 
-let currentTrackIndex = -1;
+let currentTrackFile = '';
 
-function pickRandomTrackIndex() {
-    let index;
+function pickWeightedTrack() {
+    const totalWeight = playlist.reduce((sum, track) => sum + track.weight, 0);
+    let random = Math.random() * totalWeight;
 
-    do {
-        index = Math.floor(Math.random() * playlist.length);
-    } while (playlist.length > 1 && index === currentTrackIndex);
+    for (const track of playlist) {
+        random -= track.weight;
 
-    currentTrackIndex = index;
-    localStorage.setItem('lastTrackIndex', String(index));
-    return index;
+        if (random <= 0) {
+            return track.file;
+        }
+    }
+
+    return playlist[0].file;
 }
 
 function setRandomTrack(reason) {
     if (!music || !playlist.length) return null;
 
-    const index = pickRandomTrackIndex();
-    const track = playlist[index];
+    let track;
+    let attempts = 0;
+
+    do {
+        track = pickWeightedTrack();
+        attempts++;
+    } while (playlist.length > 1 && attempts < 12 && track === currentTrackFile);
+
+    currentTrackFile = track;
+    localStorage.setItem('lastTrackFile', track);
 
     music.src = track;
     music.load();
