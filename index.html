@@ -45,28 +45,42 @@ body::before {
     pointer-events: none;
 }
 
-/* Кнопка Мута (Вкл/Выкл звук) */
+/* Кнопка Мута с яркой неоновой подсветкой */
 .mute-btn {
     position: absolute;
     top: 30px;
     right: 30px;
-    background: none;
-    border: none;
-    color: #555;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff; /* Сделали белой и заметной */
     cursor: pointer;
     z-index: 10;
-    transition: color 0.3s, transform 0.2s;
+    transition: all 0.3s ease;
+    
+    /* Мягкое белое свечение вокруг кнопки */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.05);
 }
 
 .mute-btn:hover { 
-    color: #fff; 
-    transform: scale(1.1); 
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+    /* Усиление подсветки при наведении */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .mute-btn svg { 
-    width: 28px; 
-    height: 28px; 
+    width: 24px; 
+    height: 24px; 
     fill: currentColor; 
+    /* Дополнительное свечение самой иконки */
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
 }
 
 /* Главный контейнер */
@@ -128,9 +142,9 @@ body::before {
 .bar {
     width: 6px;
     height: 6px;
-    background: #ffffff; /* Белый цвет */
+    background: #ffffff;
     border-radius: 3px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); /* Неоновое свечение */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
     
     /* Запуск прыжков сразу при старте без задержек */
     animation: bounce 1.2s ease-in-out infinite alternate;
@@ -221,25 +235,39 @@ const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45
 
 // Попытка принудительно запустить звук сразу при загрузке DOM
 document.addEventListener("DOMContentLoaded", () => {
-    music.play().catch(() => {
+    music.play().then(() => {
+        muteIcon.innerHTML = iconSoundOn;
+    }).catch(() => {
         console.log("Автоплей ограничен движком, звук активируется по первому клику.");
         muteIcon.innerHTML = iconSoundOff;
     });
 });
 
-// Глобальный клик: активирует звук, если он заблокирован системой на старте
-document.body.addEventListener('click', function activate() {
+// Глобальная функция-активатор звука
+function handleGlobalClick() {
     if (music.paused) {
-        music.play().then(() => { muteIcon.innerHTML = iconSoundOn; }).catch(e => {});
+        music.play().then(() => { 
+            muteIcon.innerHTML = iconSoundOn; 
+        }).catch(e => console.log(e));
     }
-    document.body.removeEventListener('click', activate);
-});
+    // Удаляем глобальный клик после первой активации, чтобы он дальше не мешал кнопке мута
+    document.body.removeEventListener('click', handleGlobalClick);
+}
+
+// Слушаем первый клик по экрану для обхода ограничений автоплея
+document.body.addEventListener('click', handleGlobalClick);
 
 // Логика работы кнопки Мута (Вкл/Выкл)
 muteBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Отключаем всплытие, чтобы не конфликтовать с кликом по боди
+    e.stopPropagation(); // Важно: предотвращает всплытие клика до body!
+    
+    // Если это первый клик вообще — удаляем глобальный перехватчик, так как мы управляем вручную
+    document.body.removeEventListener('click', handleGlobalClick);
+
     if (music.paused) {
-        music.play().then(() => { muteIcon.innerHTML = iconSoundOn; });
+        music.play().then(() => { 
+            muteIcon.innerHTML = iconSoundOn; 
+        }).catch(err => console.log(err));
     } else {
         music.pause();
         muteIcon.innerHTML = iconSoundOff;
