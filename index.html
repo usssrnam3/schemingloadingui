@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCHEMING Loading v3</title>
+<title>SCHEMING Loading Random Music</title>
 
 <style>
 *{
@@ -545,15 +545,16 @@ body::after {
 
 <div class="loading">LOADING...</div>
 
-<audio id="bgMusic" autoplay loop preload="auto">
-    <source src="sound.mp3" type="audio/mpeg">
-</audio>
+<audio id="bgMusic" preload="auto"></audio>
 
 <script>
 /*
-    СТАРАЯ ПРОСТАЯ СИСТЕМА МУЗЫКИ
-    sound.mp3 должен лежать рядом с index.html на Vercel.
+    CLEAN GMOD AUDIO + VISUALS VERSION
+    Музыка берётся из той же папки, где лежит index.html:
+    sound.mp3, sound2.mp3, sound3.mp3, sound4.mp3, sound5.mp3
 */
+
+const DEFAULT_MUSIC_VOLUME = 0.20;
 
 let music;
 let muteBtn;
@@ -561,14 +562,49 @@ let muteIcon;
 let equalizerContainer;
 let auraText;
 let screenFlash;
+let vibeCanvas;
+let vibeCtx;
+let digitalRain;
+let glitchStrip;
+let summerFlare;
+let logo;
+let loadingEl;
 
 let userMuted = false;
-const DEFAULT_MUSIC_VOLUME = 0.20;
+let particles = [];
+let sparks = [];
+let dots = 0;
+
+const playlist = [
+    'sound.mp3',
+    'sound2.mp3',
+    'sound3.mp3',
+    'sound4.mp3',
+    'sound5.mp3'
+];
+
+const phrases = [
+    'SCHEMING',
+    'SUMMER 2026',
+    'AURA+100',
+    'AURAx0',
+    'Z-CITY'
+];
 
 const iconSoundOn = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
 const iconSoundOff = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
 
-const phrases = ['SCHEMING','SUMMER 2026','AURA+100','AURAx0','Z-CITY'];
+function pickRandomTrack() {
+    let lastTrack = parseInt(localStorage.getItem('lastTrackIndex') || '-1', 10);
+    let index;
+
+    do {
+        index = Math.floor(Math.random() * playlist.length);
+    } while (playlist.length > 1 && index === lastTrack);
+
+    localStorage.setItem('lastTrackIndex', String(index));
+    return playlist[index];
+}
 
 function updateMuteIcon() {
     if (!muteIcon || !muteBtn) return;
@@ -576,10 +612,14 @@ function updateMuteIcon() {
     muteBtn.title = userMuted ? 'Включить звук' : 'Выключить звук';
 }
 
-function tryPlayMusic(source) {
+function tryPlayMusic(source, gmodVolume) {
     if (!music || userMuted) return;
 
-    music.volume = DEFAULT_MUSIC_VOLUME;
+    const volumeFromGame = Number(gmodVolume);
+    music.volume = Number.isFinite(volumeFromGame) && volumeFromGame > 0
+        ? Math.min(volumeFromGame, DEFAULT_MUSIC_VOLUME)
+        : DEFAULT_MUSIC_VOLUME;
+
     music.muted = false;
     music.loop = true;
 
@@ -590,10 +630,10 @@ function tryPlayMusic(source) {
             .then(() => {
                 userMuted = false;
                 updateMuteIcon();
-                console.log('[Audio] started:', source || 'unknown');
+                console.log('[Audio] started:', source || 'unknown', music.currentSrc || music.src);
             })
             .catch((err) => {
-                console.log('[Audio] autoplay blocked or failed:', source || 'unknown', err);
+                console.log('[Audio] play failed:', source || 'unknown', err);
                 updateMuteIcon();
             });
     }
@@ -605,7 +645,7 @@ function toggleMute(e) {
         e.stopPropagation();
     }
 
-    if (!music) return;
+    if (!music) return false;
 
     if (music.paused || userMuted) {
         userMuted = false;
@@ -616,158 +656,33 @@ function toggleMute(e) {
         music.pause();
         updateMuteIcon();
     }
+
+    return false;
 }
-
-function initPageAfterDomReady() {
-    music = document.getElementById('bgMusic');
-    muteBtn = document.getElementById('muteBtn');
-    muteIcon = document.getElementById('muteIcon');
-    equalizerContainer = document.getElementById('equalizer');
-    auraText = document.getElementById('auraText');
-    screenFlash = document.getElementById('screenFlash');
-
-    music.volume = DEFAULT_MUSIC_VOLUME;
-    music.muted = false;
-    music.loop = true;
-
-    for (let i = 0; i < 32; i++) {
-        const bar = document.createElement('div');
-        bar.classList.add('bar');
-        equalizerContainer.appendChild(bar);
-    }
-
-    updateMuteIcon();
-
-    music.addEventListener('canplaythrough', () => {
-        console.log('[Audio] MP3 loaded:', music.currentSrc || music.src);
-    });
-
-    music.addEventListener('error', () => {
-        console.log('[Audio] MP3 ERROR. Проверь файл sound.mp3 рядом с index.html:', music.currentSrc || music.src);
-    });
-
-    music.addEventListener('ended', () => {
-        music.currentTime = 0;
-        tryPlayMusic('ended-loop');
-    });
-
-    muteBtn.addEventListener('click', toggleMute);
-
-    // Старый принцип: пытаемся стартовать сразу после DOMContentLoaded.
-    tryPlayMusic('DOMContentLoaded');
-
-    // Если автоплей заблокирован, первый клик по странице активирует музыку.
-    document.body.addEventListener('click', function activateMusicOnce() {
-        if (music && music.paused && !userMuted) {
-            tryPlayMusic('body-click');
-        }
-        document.body.removeEventListener('click', activateMusicOnce);
-    });
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPageAfterDomReady);
-} else {
-    initPageAfterDomReady();
-}
-
-window.addEventListener('load', () => {
-    tryPlayMusic('window-load');
-});
-
-// GMod иногда вызывает эти функции во время загрузки. Пусть они тоже просто пинают старый play().
-window.GameDetails = function() { tryPlayMusic('GameDetails'); };
-window.SetFilesNeeded = function() { tryPlayMusic('SetFilesNeeded'); };
-window.SetFilesTotal = function() { tryPlayMusic('SetFilesTotal'); };
-window.DownloadingFile = function() { tryPlayMusic('DownloadingFile'); };
-window.SetStatusChanged = function() { tryPlayMusic('SetStatusChanged'); };
 
 function getRandomPhrase() {
     return phrases[Math.floor(Math.random() * phrases.length)];
 }
 
 function setAuraPhrase() {
+    if (!auraText) return;
     const phrase = getRandomPhrase();
     auraText.textContent = phrase;
     auraText.setAttribute('data-text', phrase);
 }
 
-function initPageAfterDomReady() {
-    music = document.getElementById('loading-music');
-    muteBtn = document.getElementById('muteBtn');
-    muteIcon = document.getElementById('muteIcon');
-    equalizerContainer = document.getElementById('equalizer');
-    auraText = document.getElementById('auraText');
-    screenFlash = document.getElementById('screenFlash');
-
-    music.volume = currentMusicVolume;
-    music.muted = false;
-    music.loop = true;
-    music.preload = 'auto';
-
-    for (let i = 0; i < 32; i++) {
-        const bar = document.createElement('div');
-        bar.classList.add('bar');
-        equalizerContainer.appendChild(bar);
-    }
-
-    updateMuteIcon();
-
-    music.addEventListener('canplaythrough', () => {
-        console.log('[GMod Audio] MP3 loaded:', music.src);
-    });
-
-    music.addEventListener('error', () => {
-        console.log('[GMod Audio] MP3 ERROR. Проверяй путь:', music.src);
-    });
-
-    music.addEventListener('ended', () => {
-        music.currentTime = 0;
-        startMusic('ended-loop');
-    });
-
-    muteBtn.addEventListener('click', toggleMute);
-    muteBtn.addEventListener('mousedown', toggleMute);
-    muteBtn.addEventListener('touchstart', toggleMute, { passive: false });
-
-    // Запуск после DOMContentLoaded, чтобы audio точно существовал.
-    startMusic('DOMContentLoaded');
-
-    // Если GMod успел вызвать GameDetails раньше и передал громкость — используем её.
-    if (pendingGmodStart || pendingGmodVolume !== null) {
-        startMusic('pending-GameDetails', pendingGmodVolume);
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPageAfterDomReady);
-} else {
-    initPageAfterDomReady();
-}
-
-window.addEventListener('load', () => {
-    startMusic('window-load');
-});
-
-const loadingEl = document.querySelector('.loading');
-let dots = 0;
-setInterval(() => {
-    dots = (dots + 1) % 4;
-    loadingEl.textContent = 'LOADING' + '.'.repeat(dots);
-}, 500);
-
 function randomAuraSoft() {
+    if (!auraText) return;
     setAuraPhrase();
     auraText.className = 'aura-text';
-    const x = 15 + Math.random() * 70;
-    const y = 15 + Math.random() * 70;
-    auraText.style.left = x + '%';
-    auraText.style.top = y + '%';
+    auraText.style.left = (15 + Math.random() * 70) + '%';
+    auraText.style.top = (15 + Math.random() * 70) + '%';
     void auraText.offsetWidth;
     auraText.classList.add('soft');
 }
 
 function auraFullGlitch() {
+    if (!auraText || !screenFlash) return;
     setAuraPhrase();
     auraText.className = 'aura-text';
     auraText.style.left = '50%';
@@ -776,34 +691,13 @@ function auraFullGlitch() {
     void auraText.offsetWidth;
     void screenFlash.offsetWidth;
     screenFlash.classList.add('active');
-    if (typeof microGlitchBurst === 'function') microGlitchBurst();
+    microGlitchBurst();
     auraText.classList.add('full');
 }
 
-setInterval(() => {
-    if (Math.random() > 0.25) {
-        randomAuraSoft();
-    } else {
-        randomAuraSoft();
-        setTimeout(() => {
-            auraText.className = 'aura-text';
-        }, 900);
-        setTimeout(() => {
-            auraFullGlitch();
-        }, 1150);
-    }
-}, 4200);
-
-
-const vibeCanvas = document.getElementById('vibeCanvas');
-const vibeCtx = vibeCanvas.getContext('2d');
-const digitalRain = document.getElementById('digitalRain');
-const glitchStrip = document.getElementById('glitchStrip');
-const summerFlare = document.getElementById('summerFlare');
-let particles = [];
-let sparks = [];
-
 function resizeVibeCanvas() {
+    if (!vibeCanvas || !vibeCtx) return;
+
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     vibeCanvas.width = Math.floor(window.innerWidth * dpr);
     vibeCanvas.height = Math.floor(window.innerHeight * dpr);
@@ -823,11 +717,14 @@ function resizeVibeCanvas() {
 }
 
 function drawVibe() {
+    if (!vibeCtx) return;
+
     vibeCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
+
         if (p.x < -20) p.x = window.innerWidth + 20;
         if (p.x > window.innerWidth + 20) p.x = -20;
         if (p.y < -20) p.y = window.innerHeight + 20;
@@ -842,6 +739,7 @@ function drawVibe() {
     }
 
     vibeCtx.shadowBlur = 0;
+
     for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
             const a = particles[i];
@@ -849,6 +747,7 @@ function drawVibe() {
             const dx = a.x - b.x;
             const dy = a.y - b.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
+
             if (dist < 135) {
                 vibeCtx.strokeStyle = `rgba(255,255,255,${(1 - dist / 135) * 0.045})`;
                 vibeCtx.lineWidth = 1;
@@ -861,6 +760,7 @@ function drawVibe() {
     }
 
     sparks = sparks.filter(s => s.life > 0);
+
     for (const s of sparks) {
         s.life -= 0.018;
         s.x += s.vx;
@@ -873,10 +773,11 @@ function drawVibe() {
 }
 
 function spawnRunes() {
+    if (!digitalRain) return;
+
     const rune = document.createElement('div');
     rune.className = 'rune';
-    const tokens = ['SCHEMING','SUMMER 2026','AURA+100','AURAx0','Z-CITY'];
-    rune.textContent = tokens[Math.floor(Math.random() * tokens.length)];
+    rune.textContent = phrases[Math.floor(Math.random() * phrases.length)];
     rune.style.left = Math.random() * 100 + '%';
     rune.style.animationDuration = (4 + Math.random() * 5) + 's';
     rune.style.opacity = (0.35 + Math.random() * 0.5).toString();
@@ -885,6 +786,8 @@ function spawnRunes() {
 }
 
 function microGlitchBurst() {
+    if (!glitchStrip) return;
+
     glitchStrip.style.top = (10 + Math.random() * 80) + '%';
     glitchStrip.className = 'glitch-strip';
     void glitchStrip.offsetWidth;
@@ -902,15 +805,27 @@ function microGlitchBurst() {
     }
 }
 
-
-const logo = document.querySelector('.logo');
-
-function syncLogoLayers(){
+function syncLogoLayers() {
+    if (!logo) return;
     logo.setAttribute('data-text', logo.textContent);
 }
-syncLogoLayers();
+
+function spawnLogoSparks(count = 24, warm = false) {
+    for (let i = 0; i < count; i++) {
+        sparks.push({
+            x: window.innerWidth * (0.35 + Math.random() * 0.3),
+            y: window.innerHeight * (0.39 + Math.random() * 0.16),
+            vx: (Math.random() - 0.5) * (warm ? 24 : 18),
+            vy: (Math.random() - 0.5) * (warm ? 11 : 7),
+            w: warm ? 14 + Math.random() * 54 : 8 + Math.random() * 42,
+            life: warm ? 0.55 + Math.random() * 0.55 : 0.35 + Math.random() * 0.45
+        });
+    }
+}
 
 function setMainLogo(text) {
+    if (!logo) return;
+
     logo.classList.remove('logo-summer', 'logo-naplyvich');
     logo.classList.add('logo-switching');
 
@@ -920,11 +835,13 @@ function setMainLogo(text) {
 
         if (text === 'SUMMER 2026') {
             logo.classList.add('logo-summer');
+
             if (summerFlare) {
                 summerFlare.className = 'summer-flare';
                 void summerFlare.offsetWidth;
                 summerFlare.classList.add('active');
             }
+
             spawnLogoSparks(34, true);
         }
 
@@ -941,27 +858,16 @@ function setMainLogo(text) {
     }, 760);
 }
 
-function spawnLogoSparks(count = 24, warm = false) {
-    for (let i = 0; i < count; i++) {
-        sparks.push({
-            x: window.innerWidth * (0.35 + Math.random() * 0.3),
-            y: window.innerHeight * (0.39 + Math.random() * 0.16),
-            vx: (Math.random() - 0.5) * (warm ? 24 : 18),
-            vy: (Math.random() - 0.5) * (warm ? 11 : 7),
-            w: warm ? 14 + Math.random() * 54 : 8 + Math.random() * 42,
-            life: warm ? 0.55 + Math.random() * 0.55 : 0.35 + Math.random() * 0.45
-        });
-    }
-}
-
 function randomLogoSwap() {
+    if (!logo || logo.textContent !== 'SCHEMING') return;
+
     const r = Math.random();
     let temp = null;
 
     if (r > 0.94) temp = 'NAPLYVICH';
     else if (r > 0.74) temp = 'SUMMER 2026';
 
-    if (!temp || logo.textContent !== 'SCHEMING') return;
+    if (!temp) return;
 
     setMainLogo(temp);
 
@@ -973,16 +879,116 @@ function randomLogoSwap() {
     }, 3600 + Math.random() * 2800);
 }
 
-setInterval(randomLogoSwap, 7600);
+function initPageAfterDomReady() {
+    music = document.getElementById('bgMusic');
+    muteBtn = document.getElementById('muteBtn');
+    muteIcon = document.getElementById('muteIcon');
+    equalizerContainer = document.getElementById('equalizer');
+    auraText = document.getElementById('auraText');
+    screenFlash = document.getElementById('screenFlash');
+    vibeCanvas = document.getElementById('vibeCanvas');
+    vibeCtx = vibeCanvas.getContext('2d');
+    digitalRain = document.getElementById('digitalRain');
+    glitchStrip = document.getElementById('glitchStrip');
+    summerFlare = document.getElementById('summerFlare');
+    logo = document.querySelector('.logo');
+    loadingEl = document.querySelector('.loading');
 
-resizeVibeCanvas();
-drawVibe();
-window.addEventListener('resize', resizeVibeCanvas);
-setInterval(spawnRunes, 360);
-setInterval(() => {
-    if (Math.random() > 0.45) microGlitchBurst();
-}, 2600);
+    const selectedTrack = pickRandomTrack();
+    music.src = selectedTrack;
+    music.volume = DEFAULT_MUSIC_VOLUME;
+    music.muted = false;
+    music.loop = true;
+    music.preload = 'auto';
+    music.load();
 
+    console.log('[Audio] selected track:', selectedTrack);
+
+    for (let i = 0; i < 32; i++) {
+        const bar = document.createElement('div');
+        bar.classList.add('bar');
+        equalizerContainer.appendChild(bar);
+    }
+
+    updateMuteIcon();
+    syncLogoLayers();
+
+    music.addEventListener('canplaythrough', () => {
+        console.log('[Audio] MP3 loaded:', music.currentSrc || music.src);
+    });
+
+    music.addEventListener('error', () => {
+        console.log('[Audio] MP3 ERROR. Проверь файлы sound.mp3, sound2.mp3, sound3.mp3, sound4.mp3, sound5.mp3 рядом с index.html:', music.currentSrc || music.src);
+    });
+
+    music.addEventListener('ended', () => {
+        music.currentTime = 0;
+        tryPlayMusic('ended-loop');
+    });
+
+    muteBtn.addEventListener('click', toggleMute);
+    muteBtn.addEventListener('mousedown', toggleMute);
+    muteBtn.addEventListener('touchstart', toggleMute, { passive: false });
+
+    tryPlayMusic('DOMContentLoaded');
+
+    setInterval(() => {
+        dots = (dots + 1) % 4;
+        loadingEl.textContent = 'LOADING' + '.'.repeat(dots);
+    }, 500);
+
+    setInterval(() => {
+        if (Math.random() > 0.25) {
+            randomAuraSoft();
+        } else {
+            randomAuraSoft();
+            setTimeout(() => {
+                auraText.className = 'aura-text';
+            }, 900);
+            setTimeout(auraFullGlitch, 1150);
+        }
+    }, 4200);
+
+    resizeVibeCanvas();
+    drawVibe();
+    window.addEventListener('resize', resizeVibeCanvas);
+
+    setInterval(spawnRunes, 360);
+    setInterval(() => {
+        if (Math.random() > 0.45) microGlitchBurst();
+    }, 2600);
+    setInterval(randomLogoSwap, 7600);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPageAfterDomReady);
+} else {
+    initPageAfterDomReady();
+}
+
+window.addEventListener('load', () => {
+    tryPlayMusic('window-load');
+});
+
+window.GameDetails = function(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
+    tryPlayMusic('GameDetails', volume);
+};
+
+window.SetFilesNeeded = function() {
+    tryPlayMusic('SetFilesNeeded');
+};
+
+window.SetFilesTotal = function() {
+    tryPlayMusic('SetFilesTotal');
+};
+
+window.DownloadingFile = function() {
+    tryPlayMusic('DownloadingFile');
+};
+
+window.SetStatusChanged = function() {
+    tryPlayMusic('SetStatusChanged');
+};
 </script>
 
 </body>
