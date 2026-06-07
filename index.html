@@ -58,7 +58,7 @@ body::before {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fff; /* Сделали белой и заметной */
+    color: #fff; 
     cursor: pointer;
     z-index: 10;
     transition: all 0.3s ease;
@@ -163,8 +163,8 @@ body::before {
 
 /* Анимации глитча и пульсации */
 @keyframes logoGlow{
-    0%,100%{ transform:scale(1); text-shadow: 0 0 8px rgba(255,255,255,.2); }
-    50%{ transform:scale(1.02); text-shadow: 0 0 15px rgba(255,255,255,.6), 0 0 40px rgba(255,255,255,.2); }
+    0%,100%{ transform:scale(1); text-shadow: 0 0 8px rgba(255,255,255,.15); }
+    50%{ transform:scale(1.04); text-shadow: 0 0 15px rgba(255,255,255,.65), 0 0 35px rgba(255,255,255,.45); }
 }
 
 @keyframes glitch-anim {
@@ -184,7 +184,7 @@ body::before {
     position:absolute; 
     bottom:60px; 
     z-index: 2; 
-    color:#555; 
+    color:#777; 
     font-size:14px;
     letter-spacing:6px; 
     text-transform:uppercase; 
@@ -192,7 +192,7 @@ body::before {
     user-select: none;
 }
 
-@keyframes pulse{ 0%,100%{ opacity:.4; } 50%{ opacity:1; color: #aaa; } }
+@keyframes pulse{ 0%,100%{ opacity:.3; } 50%{ opacity:1; } }
 </style>
 </head>
 
@@ -211,9 +211,7 @@ body::before {
 
 <div class="loading">LOADING...</div>
 
-<audio id="bgMusic" autoplay loop crossorigin="anonymous">
-    <source src="sound.mp3" type="audio/mpeg">
-</audio>
+<audio id="bgMusic" autoplay loop crossorigin="anonymous"></audio>
 
 <script>
 const music = document.getElementById('bgMusic');
@@ -222,6 +220,9 @@ const muteIcon = document.getElementById('muteIcon');
 const equalizerContainer = document.getElementById('equalizer');
 
 music.volume = 0.20;
+
+// Обход кэша: принудительно заставляем браузер загрузить новый файл sound.mp3
+music.src = 'sound.mp3?t=' + new Date().getTime();
 
 // Автоматическая генерация 32 полосок для эквалайзера
 for (let i = 0; i < 32; i++) {
@@ -250,7 +251,6 @@ function handleGlobalClick() {
             muteIcon.innerHTML = iconSoundOn; 
         }).catch(e => console.log(e));
     }
-    // Удаляем глобальный клик после первой активации, чтобы он дальше не мешал кнопке мута
     document.body.removeEventListener('click', handleGlobalClick);
 }
 
@@ -259,9 +259,9 @@ document.body.addEventListener('click', handleGlobalClick);
 
 // Логика работы кнопки Мута (Вкл/Выкл)
 muteBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Важно: предотвращает всплытие клика до body!
+    e.stopPropagation(); // Отключаем всплытие, чтобы не конфликтовать с кликом по body
     
-    // Если это первый клик вообще — удаляем глобальный перехватчик, так как мы управляем вручную
+    // Снимаем глобальный клик, так как пользователь уже кликнул по интерфейсу целенаправленно
     document.body.removeEventListener('click', handleGlobalClick);
 
     if (music.paused) {
@@ -281,11 +281,11 @@ music.onended = () => {
 };
 
 // Скрипт точек LOADING...
-const loading = document.querySelector('.loading');
+const loadingEl = document.querySelector('.loading');
 let dots = 0;
 setInterval(() => {
     dots = (dots + 1) % 4;
-    loading.textContent = 'LOADING' + '.'.repeat(dots);
+    loadingEl.textContent = 'LOADING' + '.'.repeat(dots);
 }, 500);
 </script>
 
