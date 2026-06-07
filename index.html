@@ -557,17 +557,14 @@ const screenFlash = document.getElementById('screenFlash');
 
 const MUSIC_VOLUME = 0.045;
 let userMuted = false;
-let audioStarted = false;
-let autoplayRetryTimer = null;
-let autoplayRetries = 0;
 
 music.volume = MUSIC_VOLUME;
 music.muted = false;
 music.preload = 'auto';
+music.autoplay = true;
 music.loop = true;
 music.setAttribute('playsinline', 'playsinline');
-// ВАЖНО для Garry's Mod loading screen: файл должен лежать рядом с HTML и называться ровно sound.mp3.
-// Без ?t=... — старый CEF/Awesomium иногда плохо отдаёт mp3 с query-параметрами.
+// Файл sound.mp3 должен лежать рядом с HTML.
 music.src = 'sound.mp3';
 music.load();
 
@@ -597,109 +594,48 @@ function updateMuteIcon() {
     muteBtn.title = userMuted ? 'Включить звук' : 'Выключить звук';
 }
 
-function tryStartAudio() {
-    if (userMuted) {
-        music.muted = true;
-        updateMuteIcon();
-        return;
-    }
-
+function forcePlayMusic() {
     music.volume = MUSIC_VOLUME;
-    music.muted = false;
+    music.muted = userMuted;
 
     const playPromise = music.play();
-
-    if (playPromise && typeof playPromise.then === 'function') {
-        playPromise.then(() => {
-            audioStarted = true;
-            updateMuteIcon();
-            stopAutoplayRetries();
-        }).catch(() => {
-            audioStarted = false;
-            // Это нормально для CEF/браузеров: звук разрешится после первого действия игрока.
-            updateMuteIcon();
+    if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(err => {
+            // Если движок Garry's Mod/CEF сам запрещает autoplay, JS не сможет это обойти.
+            console.log('Autoplay blocked by engine/browser:', err);
         });
-    } else {
-        // Старый Awesomium/CEF может не возвращать Promise.
-        audioStarted = true;
-        updateMuteIcon();
     }
 }
-
-function startAutoplayRetries() {
-    stopAutoplayRetries();
-    autoplayRetries = 0;
-    autoplayRetryTimer = setInterval(() => {
-        autoplayRetries++;
-        if (!audioStarted && !userMuted) tryStartAudio();
-        if (audioStarted || autoplayRetries > 24) stopAutoplayRetries();
-    }, 500);
-}
-
-function stopAutoplayRetries() {
-    if (autoplayRetryTimer) {
-        clearInterval(autoplayRetryTimer);
-        autoplayRetryTimer = null;
-    }
-}
-
-function unlockAudio(e) {
-    if (e && e.target && muteBtn.contains(e.target)) return;
-    if (!userMuted) tryStartAudio();
-}
-
-// Garry's Mod/CEF: пробуем сразу и несколько раз после загрузки.
-document.addEventListener('DOMContentLoaded', () => {
-    updateMuteIcon();
-    tryStartAudio();
-    startAutoplayRetries();
-});
-window.addEventListener('load', () => {
-    tryStartAudio();
-    startAutoplayRetries();
-});
-window.addEventListener('focus', unlockAudio);
-document.addEventListener('click', unlockAudio, true);
-document.addEventListener('mousedown', unlockAudio, true);
-document.addEventListener('pointerdown', unlockAudio, true);
-document.addEventListener('touchstart', unlockAudio, true);
-document.addEventListener('keydown', unlockAudio, true);
-
-let lastMuteToggleAt = 0;
 
 function toggleMute(e) {
-    const now = Date.now();
-    if (now - lastMuteToggleAt < 350) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-        }
-        return false;
-    }
-    lastMuteToggleAt = now;
-
     if (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
     }
 
     userMuted = !userMuted;
     music.muted = userMuted;
 
     if (!userMuted) {
-        tryStartAudio();
+        forcePlayMusic();
     }
 
     updateMuteIcon();
-    return false;
 }
 
-// Несколько обработчиков для старого CEF: где-то click может не долетать, зато mousedown работает.
-muteBtn.onclick = toggleMute;
-muteBtn.onmousedown = toggleMute;
-muteBtn.ontouchstart = toggleMute;
+// Никакой проверки на первый клик: просто запускаем музыку сразу.
+document.addEventListener('DOMContentLoaded', () => {
+    updateMuteIcon();
+    forcePlayMusic();
+});
+
+window.addEventListener('load', () => {
+    forcePlayMusic();
+});
+
+muteBtn.addEventListener('click', toggleMute);
+muteBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+muteBtn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
 
 music.onended = () => {
     music.currentTime = 0;
